@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum ObjectBehaviour { Expand, Travel, Jump }
 public enum DestroyBehaviour { Explode, Fade, Fall }
-public enum ObjectType { YellowBlock }
+public enum ObjectType { YellowBlock, BlueSphere, Coin, RedBox, Shield, TargetMark }
 
 [RequireComponent(typeof(Rigidbody))]
 public class ClickeableObject : CachedTransform, IClickeable
@@ -73,8 +73,11 @@ public class ClickeableObject : CachedTransform, IClickeable
         {
             case ObjectBehaviour.Expand:
                 RBody.isKinematic = true;
+
+                Vector3 startScale = MyTransform.localScale;
                 MyTransform.localScale = Vector3.zero;
-                LeanTween.scale(gameObject, Vector3.one, .5f).setEaseOutBounce();
+
+                LeanTween.scale(gameObject, startScale, .5f).setEaseOutBounce();
 
                 enableBounceTimer = true;
                 bounceTimeToDestroy = Time.time + 5.5f;
@@ -106,16 +109,19 @@ public class ClickeableObject : CachedTransform, IClickeable
     {
         lives--;
         if (lives < 1) DestroyObject(true);
+        if (data.objectType == ObjectType.TargetMark) objectSpawner.ForceCoinsToSpawn(data.coinsToSpawnOnClick);
     }
 
     void DestroyObject(bool byClick)
     {
         if (byClick)
         {
+            LeanTween.cancel(gameObject);
+
             switch (data.destroyBehaviour)
             {
                 case DestroyBehaviour.Explode:
-                    explosionPS.Play();
+                    if (explosionPS != null) explosionPS.Play();
                     meshRenderer.enabled = false;
 
                     LeanTween.value(0, 1, 1).setOnComplete(() => { OnDeath?.Invoke(this); });
@@ -174,9 +180,8 @@ public class ClickeableObject : CachedTransform, IClickeable
     {
         LeanTween.cancel(gameObject);
         MaterialPropertyBlock colorProperty = new MaterialPropertyBlock();
-        meshRenderer.GetPropertyBlock(colorProperty);
+        Color originalColor = Color.white;
 
-        Color originalColor = colorProperty.GetColor("_Color");
         LeanTween.value(1, 0, .8f).setOnUpdate((value) =>
         {
             originalColor.a = value;

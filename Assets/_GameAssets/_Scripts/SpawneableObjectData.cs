@@ -11,6 +11,7 @@ public class SpawneableObjectData : ScriptableObject
     public float timeToFail = 5;
 
     public int lives;
+    public int coinsToSpawnOnClick;
     public int points;
     public int failPoints;
 }

@@ -7,6 +7,8 @@ public interface IClickeable
 
 public class InputManager : MonoBehaviour
 {
+    [SerializeField] LayerMask layerMask;
+
     Camera _MainCamera;
     Camera MainCamera
     {
@@ -24,7 +26,7 @@ public class InputManager : MonoBehaviour
         if (!EnableInput || Utilities.MouseOverUI() || !Input.GetMouseButtonDown(0)) return;
 
         Ray ray = MainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, float.PositiveInfinity, LayerMask.GetMask("ClickeableObjects")))
+        if (Physics.Raycast(ray, out RaycastHit hit, float.PositiveInfinity, layerMask))
         {
             IClickeable target = hit.transform.GetComponent<IClickeable>();
             if (target != null)

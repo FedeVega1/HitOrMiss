@@ -10,15 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: db49cbdacb55e024f9b160f170f3312b, type: 3}
-  m_Name: Easy
+  m_Name: 3 - Hard
   m_EditorClassIdentifier: 
-  difficultyLevel: 0
+  difficultyLevel: 2
   spawnChancePerObject:
     spawnChance:
     - objectType: 0
-      chance: 1
-  maxRoundTime: 2
-  minTimeToSpawn: 1
-  maxTimeToSpawn: 5
-  minObjectSpawnQuantity: 5
-  maxObjectSpawnQuantity: 10
+      chance: 0.6
+    - objectType: 1
+      chance: 0.4
+    - objectType: 2
+      chance: 0.2
+    - objectType: 3
+      chance: 0.4
+    - objectType: 4
+      chance: 0.4
+    - objectType: 5
+      chance: 0.15
+  maxRoundTime: 120
+  minTimeToSpawn: 0.2
+  maxTimeToSpawn: 1.5
+  minObjectSpawnQuantity: 15
+  maxObjectSpawnQuantity: 20

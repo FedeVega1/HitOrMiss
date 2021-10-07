@@ -7,7 +7,7 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager INS;
 
-    [SerializeField] RectTransform difficultyButtonPanel;
+    [SerializeField] RectTransform difficultyButtonPanel, scoreRect;
     [SerializeField] Text timer, playerScore;
 
     void Awake()
@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
     public void StartGame()
     {
         LeanTween.moveY(timer.rectTransform, 0, .25f).setEaseOutBounce();
-        LeanTween.moveY(playerScore.rectTransform, -73, .25f).setEaseOutBounce();
+        LeanTween.moveY(scoreRect, -73, .25f).setEaseOutBounce();
     }
 
     public void SetUpDifficultyButtons(ref DifficultyData[] data)

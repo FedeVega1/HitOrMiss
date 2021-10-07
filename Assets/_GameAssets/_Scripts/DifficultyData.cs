@@ -7,6 +7,8 @@ public class ObjectSpawnChance
     public class SpawnChance
     {
         public ObjectType objectType;
+
+        [Range(0, 1)]
         public float chance;
     }
 

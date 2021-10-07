@@ -15,7 +15,7 @@ public class ObjectPool : CachedTransform
     {
         objectSpawner = spawner;
 
-        SpawneableObjectData objectData = Resources.Load<SpawneableObjectData>(objectsType.ToString());
+        SpawneableObjectData objectData = Resources.Load<SpawneableObjectData>(System.IO.Path.Combine("SpanwneableObjectData", objectsType.ToString()));
         if (objectData != null)
         {
             int size = poolObjects.Length;

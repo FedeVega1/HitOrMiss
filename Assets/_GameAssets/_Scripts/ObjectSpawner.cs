@@ -17,9 +17,9 @@ public class ObjectSpawner : CachedTransform
     }
 
     DifficultyData currentDifficulty;
-    bool gameStarted;
+    bool gameStarted, forceCoinSpawn;
     float timeForNextSpawn;
-    int numberOfActiveObjects;
+    int numberOfActiveObjects, coinsToSpawn;
 
     public void OnGameStart(DifficultyData diffData)
     {
@@ -36,23 +36,41 @@ public class ObjectSpawner : CachedTransform
 
         if (Time.time >= timeForNextSpawn)
         {
-            float random = Random.Range(0, 1f);
-
-            int size = pools.Length;
             int randomPool = -1;
-            float lowestProbability = 9999;
-
-            for (int i = 0; i < size; i++)
+            int size = pools.Length;
+            if (forceCoinSpawn)
             {
-                float chance = currentDifficulty.spawnChancePerObject[pools[i].objectsType];
-                if (chance >= random && chance < lowestProbability)
+                for (int i = 0; i < size; i++)
                 {
-                    randomPool = i;
-                    lowestProbability = chance;
+                    if (pools[i].objectsType == ObjectType.Coin)
+                    {
+                        randomPool = i;
+                        break;
+                    }
                 }
-            }
 
-            if (randomPool == -1) return;
+                coinsToSpawn--;
+                if (coinsToSpawn <= 0) forceCoinSpawn = false;
+            }
+            else
+            {
+                float random = Random.Range(0, 1f);
+                if (random == 0) return;
+
+                float lowestProbability = 9999;
+
+                for (int i = 0; i < size; i++)
+                {
+                    float chance = currentDifficulty.spawnChancePerObject[pools[i].objectsType];
+                    if (chance >= random && chance < lowestProbability)
+                    {
+                        randomPool = i;
+                        lowestProbability = chance;
+                    }
+                }
+
+                if (randomPool == -1) return;
+            }
 
             ClickeableObject objectToSpawn = pools[randomPool].PeekObject();
 
@@ -80,12 +98,12 @@ public class ObjectSpawner : CachedTransform
                     xPos = Random.Range(0f, 1f) < .5f ? offScreenSide.x : -offScreenSide.x;
 
                     spawnPos = MyTransform.position + new Vector3(xPos, 0, 0);
-                    spawnRot = Quaternion.identity;
+                    spawnRot = Quaternion.Euler(0, 180, 0);
                     break;
 
                 default:
                     spawnPos = MyTransform.position + new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
-                    spawnRot = Quaternion.identity;
+                    spawnRot = Quaternion.Euler(0, 180, 0);
                     break;
             }
 
@@ -103,5 +121,11 @@ public class ObjectSpawner : CachedTransform
         if (numberOfActiveObjects >= currentDifficulty.maxObjectSpawnQuantity) IncreaseSpawnTime();
 
         numberOfActiveObjects--;
+    }
+
+    public void ForceCoinsToSpawn(int quantity)
+    {
+        forceCoinSpawn = true;
+        coinsToSpawn = quantity;
     }
 }
