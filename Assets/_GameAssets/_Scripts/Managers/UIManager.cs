@@ -8,11 +8,18 @@ public class UIManager : MonoBehaviour
     public static UIManager INS;
 
     [SerializeField] RectTransform difficultyButtonPanel;
+    [SerializeField] Text timer, playerScore;
 
     void Awake()
     {
         if (INS == null) INS = this;
         else Destroy(gameObject);
+    }
+
+    public void StartGame()
+    {
+        LeanTween.moveY(timer.rectTransform, 0, .25f).setEaseOutBounce();
+        LeanTween.moveY(playerScore.rectTransform, -73, .25f).setEaseOutBounce();
     }
 
     public void SetUpDifficultyButtons(ref DifficultyData[] data)
@@ -39,4 +46,16 @@ public class UIManager : MonoBehaviour
     }
 
     void HideDifficultyPanel() => LeanTween.moveY(difficultyButtonPanel, -1500, .25f).setEaseOutSine();
+
+    public void UpdateRoundTimer(float time)
+    {
+        int minutes = Mathf.FloorToInt(time / 60f);
+        int seconds = Mathf.FloorToInt(Mathf.Abs((minutes * 60) - time));
+        timer.text = $"{minutes:00}:{seconds:00}";
+    }
+    public void UpdatePlayerScore(int score, int maxScore)
+    {
+        if (score < 0) return;
+        playerScore.text = $"{score:000}/{maxScore:000}";
+    }
 }

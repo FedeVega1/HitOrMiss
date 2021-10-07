@@ -4,12 +4,16 @@ using UnityEngine;
 
 public enum ObjectBehaviour { Expand, Travel, Jump }
 public enum DestroyBehaviour { Explode, Fade, Fall }
+public enum ObjectType { YellowBlock }
 
 [RequireComponent(typeof(Rigidbody))]
 public class ClickeableObject : CachedTransform, IClickeable
 {
     [SerializeField] ParticleSystem explosionPS;
     [SerializeField] MeshRenderer meshRenderer;
+
+    public ObjectBehaviour ObjBehaviour => data.objectBehaviour;
+    public ObjectType ObjType => data.objectType;
 
     Rigidbody _RBody;
     Rigidbody RBody
@@ -21,16 +25,23 @@ public class ClickeableObject : CachedTransform, IClickeable
         }
     }
 
-    bool canTravel, enableBounceTimer;
+    bool canTravel, enableBounceTimer, enableTimer;
     int lives;
-    float bounceTimeToDestroy;
-    Vector3 travelDirection, travelDestiny;
+    float bounceTimeToDestroy, lifeTime;
+    Vector3 travelDestiny;
     SpawneableObjectData data;
+    ObjectSpawner objectSpawner;
 
     public System.Action<ClickeableObject> OnDeath;
 
     void Update()
     {
+        if (enableTimer && Time.time >= lifeTime)
+        {
+            enableTimer = false;
+            DestroyObject(false);
+        }
+
         if (enableBounceTimer && Time.time >= bounceTimeToDestroy)
         {
             enableBounceTimer = false;
@@ -45,18 +56,20 @@ public class ClickeableObject : CachedTransform, IClickeable
             DestroyObject(false);
         }
 
-        MyTransform.Translate(Time.deltaTime * data.travelSpeed * travelDirection);
+        Vector3 travelDirection = Vector3.Normalize(travelDestiny - MyTransform.position);
+        MyTransform.Translate(Time.deltaTime * data.travelSpeed * travelDirection, Space.World);
     }
 
-    public void Init(SpawneableObjectData data)
+    public void Init(SpawneableObjectData data, ObjectSpawner spawner)
     {
         this.data = data;
         lives = data.lives;
+        objectSpawner = spawner;
     }
 
     public void StartBehaviour()
     {
-        switch (data.objectBehaviour)
+        switch (ObjBehaviour)
         {
             case ObjectBehaviour.Expand:
                 RBody.isKinematic = true;
@@ -68,15 +81,25 @@ public class ClickeableObject : CachedTransform, IClickeable
                 break;
 
             case ObjectBehaviour.Travel:
+                canTravel = true;
                 RBody.isKinematic = true;
-                travelDirection = Vector3.right;
-                travelDestiny = Vector3.zero;
+
+                travelDestiny = MyTransform.position + MyTransform.forward * 50;
+                float rotation = Random.Range(0, 1) < .5f ? -360 : 360;
+                LeanTween.rotateAround(gameObject, Vector3.up, rotation, .5f).setLoopCount(int.MaxValue);
+
+                //Debug.DrawLine(MyTransform.position, travelDestiny, Color.green, 5);
+                //Debug.DrawRay(MyTransform.position, travelDirection, Color.red, 5);
+                //print($"Forward: {MyTransform.forward} - Travel Destiny: {travelDestiny}");
                 break;
 
             case ObjectBehaviour.Jump:
-                MakeJump(10);
+                MakeJump(10, false);
                 break;
         }
+
+        enableTimer = true;
+        lifeTime = Time.time + data.timeToFail;
     }
 
     public void OnClick()
@@ -103,21 +126,37 @@ public class ClickeableObject : CachedTransform, IClickeable
                     break;
 
                 case DestroyBehaviour.Fall:
-                    MakeJump(5);
+                    MakeJump(5, true);
                     LeanTween.value(0, 1, 5).setOnComplete(() => { OnDeath?.Invoke(this); });
                     break;
             }
+
+            LevelManager.INS.ScorePoints(data.points);
+        }
+        else
+        {
+            OnDeath?.Invoke(this);
+            LevelManager.INS.RemovePoints(data.failPoints);
         }
     }
 
-    void MakeJump(float force)
+    void MakeJump(float force, bool randomDir)
     {
         RBody.isKinematic = false;
 
-        float randomX = Random.Range(-1f, 1f);
-        if (randomX > -.15f && randomX < .15f) randomX = .15f;
+        float forceDir;
+        if (randomDir)
+        {
+            forceDir = Random.Range(-1f, 1f);
+            if (forceDir > -.15f && forceDir < .15f) forceDir = .15f;
+        }
+        else
+        {
+            float xPos = MyTransform.position.x - objectSpawner.MyTransform.position.x;
+            forceDir = xPos > 0 ? -1 : 1;
+        }
 
-        RBody.AddForce(new Vector3(randomX, 1, 0) * force, ForceMode.Impulse);
+        RBody.AddForce(new Vector3(forceDir, 1, 0) * force, ForceMode.Impulse);
         RBody.AddTorque(new Vector3(0, 1, 1) * Random.Range(-10f, 10f));
     }
 
@@ -127,10 +166,13 @@ public class ClickeableObject : CachedTransform, IClickeable
         meshRenderer.enabled = true;
         enableBounceTimer = false;
         canTravel = false;
+        enableTimer = false;
+        LeanTween.cancel(gameObject);
     }
 
     void FadeAnim()
     {
+        LeanTween.cancel(gameObject);
         MaterialPropertyBlock colorProperty = new MaterialPropertyBlock();
         meshRenderer.GetPropertyBlock(colorProperty);
 

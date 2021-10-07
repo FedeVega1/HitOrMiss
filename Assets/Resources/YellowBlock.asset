@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95044f9afd5aa0940a61e5d6122aa0e4, type: 3}
   m_Name: YellowBlock
   m_EditorClassIdentifier: 
+  objectType: 0
   objectBehaviour: 1
-  destroyBehaviour: 1
-  travelSpeed: 5
-  timeToFail: 0
+  destroyBehaviour: 0
+  travelSpeed: 15
+  timeToFail: 5
   lives: 1
-  points: 0
-  failPoints: 0
+  points: 1
+  failPoints: 1

@@ -5,19 +5,23 @@ using UnityEngine;
 public class ObjectPool : CachedTransform
 {
     [SerializeField] ClickeableObject[] poolObjects;
-    [SerializeField] string objectsName;
+
+    public ObjectType objectsType;
 
     int index;
+    ObjectSpawner objectSpawner;
 
-    public void InitObjects()
+    public void InitObjects(ObjectSpawner spawner)
     {
-        SpawneableObjectData objectData = Resources.Load<SpawneableObjectData>(objectsName);
+        objectSpawner = spawner;
+
+        SpawneableObjectData objectData = Resources.Load<SpawneableObjectData>(objectsType.ToString());
         if (objectData != null)
         {
             int size = poolObjects.Length;
             for (int i = 0; i < size; i++)
             {
-                poolObjects[i].Init(objectData);
+                poolObjects[i].Init(objectData, objectSpawner);
                 poolObjects[i].OnDeath += ReturnObject;
             }
         }
@@ -31,17 +35,16 @@ public class ObjectPool : CachedTransform
         //    poolQueue.Enqueue(poolObjects[i]);
     }
 
-    public ClickeableObject SpawnObject(Vector3 startPos, Quaternion startRotation)
+    public ClickeableObject PeekObject() => poolObjects[index];
+
+    public void SpawnObject(Vector3 startPos, Quaternion startRotation)
     {
-        ClickeableObject poolObject = poolObjects[index];
-        poolObject.MyTransform.position = startPos;
-        poolObject.MyTransform.rotation = startRotation;
-        poolObject.StartBehaviour();
+        poolObjects[index].MyTransform.position = startPos;
+        poolObjects[index].MyTransform.rotation = startRotation;
+        poolObjects[index].StartBehaviour();
 
         index++;
         if (index >= poolObjects.Length) index = 0;
-
-        return poolObject;
     }
 
     public void ReturnObject(ClickeableObject objectToReturn)
@@ -49,5 +52,7 @@ public class ObjectPool : CachedTransform
         objectToReturn.MyTransform.localPosition = Vector3.zero;
         objectToReturn.MyTransform.rotation = Quaternion.identity;
         objectToReturn.MyTransform.localScale = Vector3.one;
+        objectToReturn.ResetData();
+        objectSpawner.DecreaseObjectNumber();
     }
 }

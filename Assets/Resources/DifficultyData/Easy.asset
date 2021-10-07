@@ -12,8 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db49cbdacb55e024f9b160f170f3312b, type: 3}
   m_Name: Easy
   m_EditorClassIdentifier: 
-  spawnChancePerObject: []
-  minTimeToSpawn: 0
-  maxTimeToSpawn: 0
-  minObjectSpawnQuantity: 0
-  maxObjectSpawnQuantity: 0
+  difficultyLevel: 0
+  spawnChancePerObject:
+    spawnChance:
+    - objectType: 0
+      chance: 1
+  maxRoundTime: 2
+  minTimeToSpawn: 1
+  maxTimeToSpawn: 5
+  minObjectSpawnQuantity: 5
+  maxObjectSpawnQuantity: 10
