@@ -170,6 +170,8 @@ public class LevelManager : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape)) UIManager.INS.RestartGame();
+
         if (!canCountTime) return;
         CurrentRoundTime -= Time.deltaTime;
     }

@@ -316,6 +316,7 @@ public class ClickeableObject : CachedTransform, IClickeable
     {
         RBody.isKinematic = true;
         meshRenderer.enabled = true;
+        boxCollider.enabled = false;
         enableBounceTimer = false;
 
         canTravel = false;
