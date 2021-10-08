@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface IClickeable
 {
-    public void OnClick();
+    public void OnClick(Vector3 clickPoint);
 }
 
 public class InputManager : MonoBehaviour
@@ -31,7 +31,7 @@ public class InputManager : MonoBehaviour
             IClickeable target = hit.transform.GetComponent<IClickeable>();
             if (target != null)
             {
-                target.OnClick();
+                target.OnClick(hit.point);
                 Debug.DrawLine(ray.origin, hit.point, Color.green, 1);
                 return;
             }

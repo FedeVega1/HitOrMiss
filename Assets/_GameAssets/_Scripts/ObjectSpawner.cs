@@ -19,7 +19,7 @@ public class ObjectSpawner : CachedTransform
     DifficultyData currentDifficulty;
     bool gameStarted, forceCoinSpawn;
     float timeForNextSpawn;
-    int numberOfActiveObjects, coinsToSpawn;
+    int numberOfActiveObjects, coinsToSpawn, maxNumberOfObjects;
 
     public void OnGameStart(DifficultyData diffData)
     {
@@ -29,11 +29,12 @@ public class ObjectSpawner : CachedTransform
         for (int i = 0; i < size; i++) pools[i].InitObjects(this, currentDifficulty.difficultyLevel);
 
         gameStarted = true;
+        maxNumberOfObjects = Random.Range(currentDifficulty.minObjectSpawnQuantity, currentDifficulty.maxObjectSpawnQuantity);
     }
 
     void Update()
     {
-        if (!gameStarted || numberOfActiveObjects >= currentDifficulty.maxObjectSpawnQuantity) return;
+        if (!gameStarted || numberOfActiveObjects >= maxNumberOfObjects) return;
 
         if (Time.time >= timeForNextSpawn)
         {
@@ -94,7 +95,7 @@ public class ObjectSpawner : CachedTransform
 
                 case ObjectBehaviour.Jump:
                     offScreenSide = MainCamera.ScreenToWorldPoint(new Vector3(Screen.width, 0, (MainCamera.fieldOfView / 2) - 10));
-                    offScreenSide.x *= .5f;
+                    offScreenSide.x *= .7f;
 
                     xPos = Random.Range(0f, 1f) < .5f ? offScreenSide.x : -offScreenSide.x;
 
@@ -125,9 +126,7 @@ public class ObjectSpawner : CachedTransform
 
     public void DecreaseObjectNumber()
     {
-        if (numberOfActiveObjects < currentDifficulty.minObjectSpawnQuantity) timeForNextSpawn = 0;
-        if (numberOfActiveObjects >= currentDifficulty.maxObjectSpawnQuantity) IncreaseSpawnTime();
-
+        if (numberOfActiveObjects >= maxNumberOfObjects) IncreaseSpawnTime();
         numberOfActiveObjects--;
     }
 

@@ -39,5 +39,5 @@ public class DifficultyData : ScriptableObject
     public float maxRoundTime = 2;
 
     public float minTimeToSpawn, maxTimeToSpawn;
-    public float minObjectSpawnQuantity, maxObjectSpawnQuantity;
+    public int minObjectSpawnQuantity, maxObjectSpawnQuantity;
 }

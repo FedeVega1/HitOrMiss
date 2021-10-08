@@ -28,7 +28,7 @@ MonoBehaviour:
     - objectType: 5
       chance: 0.049
   maxRoundTime: 120
-  minTimeToSpawn: 0.8
-  maxTimeToSpawn: 3
-  minObjectSpawnQuantity: 5
-  maxObjectSpawnQuantity: 10
+  minTimeToSpawn: 0.6
+  maxTimeToSpawn: 1.1
+  minObjectSpawnQuantity: 10
+  maxObjectSpawnQuantity: 12

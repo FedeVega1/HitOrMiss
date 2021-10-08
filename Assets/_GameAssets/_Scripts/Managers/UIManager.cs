@@ -7,7 +7,7 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager INS;
 
-    [SerializeField] RectTransform difficultyButtonPanel, scoreRect;
+    [SerializeField] RectTransform difficultyButtonPanel, scoreRect, btnExit;
     [SerializeField] Text timer, playerScore, lblGameOver, lblRetry;
     [SerializeField] CanvasGroup gameOverCanvas, obscurerCanvas;
     [SerializeField] Toggle helperPointsToggle;
@@ -30,7 +30,8 @@ public class UIManager : MonoBehaviour
     public void StartGame()
     {
         LeanTween.moveY(roundTimerFill.rectTransform, -18, .25f).setEaseOutBounce();
-        LeanTween.moveY(scoreRect, -50, .25f).setEaseOutBounce();
+        LeanTween.moveY(scoreRect, -50, .25f).setEaseOutSine();
+        LeanTween.moveY(btnExit, 150, .25f).setEaseOutSine();
     }
 
     public void SetUpDifficultyButtons(ref DifficultyData[] data)

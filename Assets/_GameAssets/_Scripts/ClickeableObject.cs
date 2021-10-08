@@ -11,7 +11,7 @@ public enum ObjectType { YellowBlock, BlueSphere, Coin, RedBox, Shield, TargetMa
 [RequireComponent(typeof(BoxCollider))]
 public class ClickeableObject : CachedTransform, IClickeable
 {
-    [SerializeField] ParticleSystem explosionPS;
+    [SerializeField] ParticleSystem explosionPS, clickPS;
     [SerializeField] MeshRenderer meshRenderer;
     [SerializeField] BoxCollider boxCollider;
     [SerializeField] Transform lblPointsRoot;
@@ -213,8 +213,14 @@ public class ClickeableObject : CachedTransform, IClickeable
         collisionTimer = Time.time + 1.25f;
     }
 
-    public void OnClick()
+    public void OnClick(Vector3 point)
     {
+        if (clickPS != null)
+        {
+            clickPS.transform.position = point;
+            clickPS.Play();
+        }
+
         lives--;
         if (lives < 1) DestroyObject(true);
         if (data.objectType == ObjectType.TargetMark) objectSpawner.ForceCoinsToSpawn(data.coinsToSpawnOnClick);

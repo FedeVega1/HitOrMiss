@@ -126,6 +126,7 @@ public class LevelManager : MonoBehaviour
         inputManager.EnableInput = false;
     }
 
+    public void ExitGame() => Application.Quit();
     public void RestartLevel() => UnityEngine.SceneManagement.SceneManager.LoadScene("Level01");
 
     public void ScorePoints(int ammount) => PlayerScore += ammount;
