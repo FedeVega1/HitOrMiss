@@ -140,14 +140,22 @@ public class ClickeableObject : CachedTransform, IClickeable
                     break;
 
                 case DifficultyLevel.Medium:
-                    if (data.objectType != ObjectType.RedBox)
+                    switch (data.objectType)
                     {
-                        lblPointsRoot.gameObject.SetActive(false);
-                        return;
-                    }
+                        case ObjectType.RedBox:
+                            lblPointsRoot.gameObject.SetActive(true);
+                            lblPoints.text = data.points.ToString();
+                            break;
 
-                    lblPointsRoot.gameObject.SetActive(true);
-                    lblPoints.text = data.points.ToString();
+                        case ObjectType.Shield:
+                            lblPointsRoot.gameObject.SetActive(true);
+                            lblPoints.text = '+' + data.points.ToString();
+                            break;
+
+                        default:
+                            lblPointsRoot.gameObject.SetActive(false);
+                            return;
+                    }
                     break;
 
                 case DifficultyLevel.Hard:
@@ -212,7 +220,7 @@ public class ClickeableObject : CachedTransform, IClickeable
     {
         boxCollider.enabled = false;
         enableCollisionTimer = true;
-        collisionTimer = Time.time + 1.25f;
+        collisionTimer = Time.time + data.collisionProtectionTime;
     }
 
     public void OnClick(Vector3 point)

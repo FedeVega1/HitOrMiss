@@ -165,13 +165,43 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("Couldn't load DifficultyData");
         }
 
-        UIManager.INS.InitVolumePanels(MusicVolume / maxMusicVolume, SFXVolume / maxSFXVolume);
+        SetupSound();
     }
 
     void Update()
     {
         if (!canCountTime) return;
         CurrentRoundTime -= Time.deltaTime;
+    }
+
+    void SetupSound()
+    {
+        float normalizedMusic = MusicVolume / maxMusicVolume;
+        float normalizedSFX = SFXVolume / maxSFXVolume;
+
+        if (PlayerPrefs.HasKey("MusicMuted"))
+        {
+            bool toggle = PlayerPrefs.GetInt("MusicMuted") == 1;
+            if (toggle) normalizedMusic = 0;
+            ToggleMusic(toggle);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("MusicMuted", 0);
+        }
+
+        if (PlayerPrefs.HasKey("SFXMuted"))
+        {
+            bool toggle = PlayerPrefs.GetInt("SFXMuted") == 1;
+            if (toggle) normalizedSFX = 0;
+            ToggleMusic(toggle);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("SFXMuted", 0);
+        }
+
+        UIManager.INS.InitVolumePanels(normalizedMusic, normalizedSFX);
     }
 
     public void StartGame(DifficultyLevel difficultyLevel)
@@ -211,11 +241,16 @@ public class LevelManager : MonoBehaviour
     public void ScorePoints(int ammount) => PlayerScore += ammount;
     public void RemovePoints(int ammount) => PlayerScore -= ammount;
 
-    public void ToggleMusic(bool toggle) => mainMusicASrc.volume = toggle ? MusicVolume : 0;
+    public void ToggleMusic(bool toggle)
+    {
+        mainMusicASrc.volume = toggle ? MusicVolume : 0;
+        PlayerPrefs.SetInt("MusicMuted", toggle ? 1 : 0);
+    }
 
     public void ToggleSFX(bool toggle)
     {
         gameOverASrc.volume = toggle ? SFXVolume : 0;
         objectSpawner.SetVolumeOfAllObjects(toggle ? SFXVolume : 0);
+        PlayerPrefs.SetInt("SFXMuted", toggle ? 1 : 0);
     }
 }

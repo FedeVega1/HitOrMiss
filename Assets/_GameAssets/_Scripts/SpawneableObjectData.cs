@@ -9,6 +9,7 @@ public class SpawneableObjectData : ScriptableObject
 
     public float travelSpeed;
     public float timeToFail = 5;
+    public float collisionProtectionTime = 1.25f;
 
     public int lives;
     public int coinsToSpawnOnClick;

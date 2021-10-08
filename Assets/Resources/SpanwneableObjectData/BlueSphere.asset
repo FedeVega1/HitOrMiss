@@ -17,6 +17,7 @@ MonoBehaviour:
   destroyBehaviour: 0
   travelSpeed: 0
   timeToFail: 5
+  collisionProtectionTime: 0.5
   lives: 1
   coinsToSpawnOnClick: 0
   points: 2
