@@ -129,6 +129,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosionPS: {fileID: 7183626882775932908}
   meshRenderer: {fileID: 3044034180819718881}
+  boxCollider: {fileID: 5381110019533172492}
+  lblPointsRoot: {fileID: 0}
+  lblPoints: {fileID: 0}
 --- !u!1001 &6985782756975417121
 PrefabInstance:
   m_ObjectHideFlags: 0

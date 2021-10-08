@@ -22,9 +22,9 @@ MonoBehaviour:
     - objectType: 2
       chance: 0.093
     - objectType: 3
-      chance: 0.3
+      chance: 0.171
     - objectType: 4
-      chance: 0.266
+      chance: 0.052
     - objectType: 5
       chance: 0.07
   maxRoundTime: 120

@@ -23,11 +23,12 @@ public class ObjectSpawner : CachedTransform
 
     public void OnGameStart(DifficultyData diffData)
     {
+        currentDifficulty = diffData;
+
         int size = pools.Length;
-        for (int i = 0; i < size; i++) pools[i].InitObjects(this);
+        for (int i = 0; i < size; i++) pools[i].InitObjects(this, currentDifficulty.difficultyLevel);
 
         gameStarted = true;
-        currentDifficulty = diffData;
     }
 
     void Update()
@@ -101,6 +102,13 @@ public class ObjectSpawner : CachedTransform
                     spawnRot = Quaternion.Euler(0, 180, 0);
                     break;
 
+                case ObjectBehaviour.Hover:
+                    xPos = Random.Range(0f, 1f) < .5f ? 1 : -1;
+
+                    spawnPos = MyTransform.position + new Vector3(xPos, -2, Random.Range(-2f, 2f));
+                    spawnRot = Quaternion.Euler(0, 180, 0);
+                    break;
+
                 default:
                     spawnPos = MyTransform.position + new Vector3(Random.Range(-4f, 4f), Random.Range(-4f, 4f), Random.Range(-2f, 2f));
                     spawnRot = Quaternion.Euler(0, 180, 0);
@@ -126,7 +134,7 @@ public class ObjectSpawner : CachedTransform
     public void ForceCoinsToSpawn(int quantity)
     {
         forceCoinSpawn = true;
-        coinsToSpawn = quantity;
+        coinsToSpawn += quantity;
     }
 
     public void OnGameOver()

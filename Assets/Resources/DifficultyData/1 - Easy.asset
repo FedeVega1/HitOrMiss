@@ -26,7 +26,7 @@ MonoBehaviour:
     - objectType: 4
       chance: 0
     - objectType: 5
-      chance: 0.089
+      chance: 0.049
   maxRoundTime: 120
   minTimeToSpawn: 0.8
   maxTimeToSpawn: 3

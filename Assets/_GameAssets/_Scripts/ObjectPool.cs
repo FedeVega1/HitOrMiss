@@ -11,7 +11,7 @@ public class ObjectPool : CachedTransform
     int index;
     ObjectSpawner objectSpawner;
 
-    public void InitObjects(ObjectSpawner spawner)
+    public void InitObjects(ObjectSpawner spawner, DifficultyLevel currentDifficulty)
     {
         objectSpawner = spawner;
 
@@ -21,7 +21,7 @@ public class ObjectPool : CachedTransform
             int size = poolObjects.Length;
             for (int i = 0; i < size; i++)
             {
-                poolObjects[i].Init(objectData, objectSpawner);
+                poolObjects[i].Init(objectData, objectSpawner, currentDifficulty);
                 poolObjects[i].OnDeath += ReturnObject;
             }
         }

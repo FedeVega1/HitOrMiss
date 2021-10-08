@@ -10,6 +10,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] RectTransform difficultyButtonPanel, scoreRect;
     [SerializeField] Text timer, playerScore, lblGameOver, lblRetry;
     [SerializeField] CanvasGroup gameOverCanvas, obscurerCanvas;
+    [SerializeField] Toggle helperPointsToggle;
+    [SerializeField] Image roundTimerFill;
 
     void Awake()
     {
@@ -17,12 +19,18 @@ public class UIManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    void Start() => FadeOut();
+    void Start()
+    {
+        helperPointsToggle.isOn = LevelManager.INS.EnableHelperPoints;
+
+        FadeOut();
+        UpdatePlayerScore(0, 100);
+    }
 
     public void StartGame()
     {
-        LeanTween.moveY(timer.rectTransform, 0, .25f).setEaseOutBounce();
-        LeanTween.moveY(scoreRect, -73, .25f).setEaseOutBounce();
+        LeanTween.moveY(roundTimerFill.rectTransform, -18, .25f).setEaseOutBounce();
+        LeanTween.moveY(scoreRect, -50, .25f).setEaseOutBounce();
     }
 
     public void SetUpDifficultyButtons(ref DifficultyData[] data)
@@ -50,17 +58,16 @@ public class UIManager : MonoBehaviour
 
     void HideDifficultyPanel() => LeanTween.moveY(difficultyButtonPanel, -1500, .25f).setEaseOutSine();
 
-    public void UpdateRoundTimer(float time)
+    public void UpdateRoundTimer(float time, float normalizedRoundTime)
     {
+        roundTimerFill.fillAmount = Mathf.Lerp(roundTimerFill.fillAmount, normalizedRoundTime, Time.deltaTime * 8);
+
         int minutes = Mathf.FloorToInt(time / 60f);
         int seconds = Mathf.FloorToInt(Mathf.Abs((minutes * 60) - time));
         timer.text = $"{minutes:00}:{seconds:00}";
     }
-    public void UpdatePlayerScore(int score, int maxScore)
-    {
-        if (score < 0) return;
-        playerScore.text = $"{score:000}/{maxScore:000}";
-    }
+
+    public void UpdatePlayerScore(int score, int maxScore) => playerScore.text = $"{score:000}/{maxScore:000}";
 
     public void OnGameOver(bool win)
     {
@@ -81,4 +88,6 @@ public class UIManager : MonoBehaviour
 
     public void FadeIn() => LeanTween.alphaCanvas(obscurerCanvas, 1, .5f).setEaseInSine();
     public void FadeOut() => LeanTween.alphaCanvas(obscurerCanvas, 0, .5f).setEaseOutSine();
+
+    public void ToggleHelperPoints() => LevelManager.INS.EnableHelperPoints = helperPointsToggle.isOn;
 }

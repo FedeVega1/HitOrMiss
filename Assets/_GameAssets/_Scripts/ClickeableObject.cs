@@ -1,19 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
-public enum ObjectBehaviour { Expand, Travel, Jump }
+public enum ObjectBehaviour { Expand, Travel, Jump, Hover }
 public enum DestroyBehaviour { Explode, Fade, Fall }
 public enum ObjectType { YellowBlock, BlueSphere, Coin, RedBox, Shield, TargetMark }
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(BoxCollider))]
 public class ClickeableObject : CachedTransform, IClickeable
 {
     [SerializeField] ParticleSystem explosionPS;
     [SerializeField] MeshRenderer meshRenderer;
+    [SerializeField] BoxCollider boxCollider;
+    [SerializeField] Transform lblPointsRoot;
+    [SerializeField] TMP_Text lblPoints;
 
     public ObjectBehaviour ObjBehaviour => data.objectBehaviour;
     public ObjectType ObjType => data.objectType;
+
+    Transform _MainCameraTransform;
+    Transform MainCameraTransform
+    {
+        get
+        {
+            if (_MainCameraTransform == null) _MainCameraTransform = Camera.main.transform;
+            return _MainCameraTransform;
+        }
+    }
 
     Rigidbody _RBody;
     Rigidbody RBody
@@ -25,9 +40,9 @@ public class ClickeableObject : CachedTransform, IClickeable
         }
     }
 
-    bool canTravel, enableBounceTimer, enableTimer;
+    bool canTravel, enableBounceTimer, enableTimer, enableCollisionTimer, enableHover;
     int lives;
-    float bounceTimeToDestroy, lifeTime, rotationSign;
+    float bounceTimeToDestroy, lifeTime, rotationSign, collisionTimer, hoverTimer;
 
     Vector3 travelDestiny, startScale;
     Quaternion startRotation;
@@ -39,8 +54,21 @@ public class ClickeableObject : CachedTransform, IClickeable
 
     void Update()
     {
+        if (lblPointsRoot != null && lblPointsRoot.gameObject.activeSelf)
+            lblPointsRoot.LookAt(MainCameraTransform, Vector3.up);
+
+        if (enableHover && Time.time >= hoverTimer)
+            RBody.AddForce(Vector3.up * 12, ForceMode.Impulse);
+
+        if (enableCollisionTimer && Time.time >= collisionTimer)
+        {
+            enableCollisionTimer = false;
+            boxCollider.enabled = true;
+        }
+
         if (enableTimer && Time.time >= lifeTime)
         {
+            //print("<color=red>Time's up</color>");
             enableTimer = false;
             DestroyObject(false);
         }
@@ -54,6 +82,8 @@ public class ClickeableObject : CachedTransform, IClickeable
 
     void FixedUpdate()
     {
+        if (enableHover) RBody.AddForce(Vector3.down * 5);
+
         if (!canTravel) return;
 
         if (Vector3.Distance(RBody.position, travelDestiny) < .1f)
@@ -80,11 +110,49 @@ public class ClickeableObject : CachedTransform, IClickeable
         }
     }
 
-    public void Init(SpawneableObjectData data, ObjectSpawner spawner)
+    public void Init(SpawneableObjectData data, ObjectSpawner spawner, DifficultyLevel currentDifficulty)
     {
         this.data = data;
         lives = data.lives;
         objectSpawner = spawner;
+
+        if (lblPoints != null)
+        {
+            if (!LevelManager.INS.EnableHelperPoints)
+            {
+                lblPointsRoot.gameObject.SetActive(false);
+                return;
+            }
+
+            switch (currentDifficulty)
+            {
+                case DifficultyLevel.Easy:
+                    lblPointsRoot.gameObject.SetActive(true);
+                    if (data.objectType != ObjectType.RedBox)
+                    {
+                        lblPoints.text = '+' + data.points.ToString();
+                        return;
+                    }
+
+                    lblPoints.text = data.points.ToString();
+                    break;
+
+                case DifficultyLevel.Medium:
+                    if (data.objectType != ObjectType.RedBox)
+                    {
+                        lblPointsRoot.gameObject.SetActive(false);
+                        return;
+                    }
+
+                    lblPointsRoot.gameObject.SetActive(true);
+                    lblPoints.text = data.points.ToString();
+                    break;
+
+                case DifficultyLevel.Hard:
+                    lblPointsRoot.gameObject.SetActive(false);
+                    break;
+            }
+        }
     }
 
     public void StartBehaviour()
@@ -110,6 +178,8 @@ public class ClickeableObject : CachedTransform, IClickeable
 
                 travelDestiny = MyTransform.position + MyTransform.forward * 50;
                 rotationSign = Random.Range(0f, 1f) <= .5f ? -1 : 1;
+                EnableCollisionTimer();
+
                 //float rotation = Random.Range(0, 1) < .5f ? -360 : 360;
                 //LeanTween.rotateAround(gameObject, Vector3.up, rotation, .5f).setLoopCount(int.MaxValue);
 
@@ -119,12 +189,28 @@ public class ClickeableObject : CachedTransform, IClickeable
                 break;
 
             case ObjectBehaviour.Jump:
-                MakeJump(Random.Range(8f, 11f), false);
+                MakeJump(Random.Range(8f, 10f), false);
+                EnableCollisionTimer();
+                break;
+
+            case ObjectBehaviour.Hover:
+                RBody.isKinematic = false;
+                enableHover = true;
+                hoverTimer = Time.time + 2.5f;
+
+                RBody.AddForce(Vector3.up * 7, ForceMode.Impulse);
                 break;
         }
 
         enableTimer = true;
         lifeTime = Time.time + data.timeToFail;
+    }
+
+    void EnableCollisionTimer()
+    {
+        boxCollider.enabled = false;
+        enableCollisionTimer = true;
+        collisionTimer = Time.time + 1.25f;
     }
 
     public void OnClick()
@@ -136,6 +222,10 @@ public class ClickeableObject : CachedTransform, IClickeable
 
     void DestroyObject(bool byClick)
     {
+        enableHover = false;
+        boxCollider.enabled = false;
+        if (lblPointsRoot != null) lblPointsRoot.gameObject.SetActive(false);
+
         if (byClick)
         {
             LeanTween.cancel(gameObject);
@@ -145,6 +235,8 @@ public class ClickeableObject : CachedTransform, IClickeable
                 case DestroyBehaviour.Explode:
                     if (explosionPS != null) explosionPS.Play();
                     meshRenderer.enabled = false;
+                    canTravel = false;
+                    RBody.isKinematic = true;
 
                     LeanTween.value(0, 1, 1).setOnComplete(() => { OnDeath?.Invoke(this); });
                     break;
@@ -159,10 +251,12 @@ public class ClickeableObject : CachedTransform, IClickeable
                     break;
             }
 
+            //print($"Add {data.points} points");
             LevelManager.INS.ScorePoints(data.points);
         }
         else
         {
+            //print($"Remove {data.failPoints} points");
             OnDeath?.Invoke(this);
             LevelManager.INS.RemovePoints(data.failPoints);
         }
@@ -215,9 +309,14 @@ public class ClickeableObject : CachedTransform, IClickeable
             colorProperty.SetColor("_Color", originalColor);
             meshRenderer.SetPropertyBlock(colorProperty);
         }
-        ).setOnComplete(() => { OnDeath?.Invoke(this); });
+        ).setOnComplete(() => 
+        {
+            colorProperty.SetColor("_Color", Color.white);
+            meshRenderer.SetPropertyBlock(colorProperty);
+            OnDeath?.Invoke(this); 
+        });
 
-        LeanTween.rotateY(gameObject, 360, .1f).setLoopCount(10);
+        LeanTween.rotateAround(gameObject, Vector3.up, 360, .1f).setLoopCount(10);
     }
 
     public void FreezeObject()

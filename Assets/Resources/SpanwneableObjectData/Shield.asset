@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Shield
   m_EditorClassIdentifier: 
   objectType: 4
-  objectBehaviour: 1
+  objectBehaviour: 3
   destroyBehaviour: 1
   travelSpeed: 0
   timeToFail: 5

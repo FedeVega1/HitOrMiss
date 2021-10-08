@@ -21,7 +21,7 @@ public class LevelManager : MonoBehaviour
             _RoundTime = value;
             if (_RoundTime < 0) GameOver(false);
 
-            UIManager.INS.UpdateRoundTimer(_RoundTime);
+            UIManager.INS.UpdateRoundTimer(_RoundTime, _RoundTime / maxTime);
         }
     }
 
@@ -32,17 +32,45 @@ public class LevelManager : MonoBehaviour
 
         set
         {
-            _PlayerScore = value;
+            _PlayerScore = Mathf.Clamp(value, 0, 100);
             if (_PlayerScore >= 100) GameOver(true);
 
             UIManager.INS.UpdatePlayerScore(_PlayerScore, 100);
         }
     }
 
+    int _EnableHelperPoints = -1;
+    public bool EnableHelperPoints 
+    { 
+        get
+        {
+            if (_EnableHelperPoints == -1)
+            {
+                if (PlayerPrefs.HasKey("EnableHelperPoints"))
+                {
+                    _EnableHelperPoints = PlayerPrefs.GetInt("EnableHelperPoints");
+                }
+                else
+                {
+                    _EnableHelperPoints = 1;
+                    PlayerPrefs.SetInt("EnableHelperPoints", _EnableHelperPoints);
+                }
+            }
+
+            return _EnableHelperPoints == 1;
+        }
+
+        set
+        {
+            _EnableHelperPoints = value ? 1 : 0;
+            PlayerPrefs.SetInt("EnableHelperPoints", _EnableHelperPoints);
+        }
+    }
 
     public DifficultyLevel CurrentDifficultyLevel { get; private set; }
 
     bool canCountTime;
+    float maxTime;
     Dictionary<DifficultyLevel, DifficultyData> difficulityData;
 
     void Awake()
@@ -84,7 +112,7 @@ public class LevelManager : MonoBehaviour
         inputManager.EnableInput = true;
 
         canCountTime = true;
-        CurrentRoundTime = data.maxRoundTime;
+        CurrentRoundTime = maxTime = data.maxRoundTime;
         UIManager.INS.StartGame();
     }
 
