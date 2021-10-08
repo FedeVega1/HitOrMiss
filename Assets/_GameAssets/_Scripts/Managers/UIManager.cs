@@ -8,13 +8,16 @@ public class UIManager : MonoBehaviour
     public static UIManager INS;
 
     [SerializeField] RectTransform difficultyButtonPanel, scoreRect;
-    [SerializeField] Text timer, playerScore;
+    [SerializeField] Text timer, playerScore, lblGameOver, lblRetry;
+    [SerializeField] CanvasGroup gameOverCanvas, obscurerCanvas;
 
     void Awake()
     {
         if (INS == null) INS = this;
         else Destroy(gameObject);
     }
+
+    void Start() => FadeOut();
 
     public void StartGame()
     {
@@ -58,4 +61,24 @@ public class UIManager : MonoBehaviour
         if (score < 0) return;
         playerScore.text = $"{score:000}/{maxScore:000}";
     }
+
+    public void OnGameOver(bool win)
+    {
+        LeanTween.alphaCanvas(gameOverCanvas, 1, .25f).setOnComplete(() =>
+        {
+            gameOverCanvas.interactable = gameOverCanvas.blocksRaycasts = true;
+        });
+
+        lblGameOver.text = win ? "You won!" : "You Lose";
+        lblRetry.text = win ? "Continue" : "Retry";
+    }
+
+    public void RestartGame()
+    {
+        FadeIn();
+        LeanTween.value(0, 1, .5f).setOnComplete(LevelManager.INS.RestartLevel);
+    }
+
+    public void FadeIn() => LeanTween.alphaCanvas(obscurerCanvas, 1, .5f).setEaseInSine();
+    public void FadeOut() => LeanTween.alphaCanvas(obscurerCanvas, 0, .5f).setEaseOutSine();
 }

@@ -27,8 +27,11 @@ public class ClickeableObject : CachedTransform, IClickeable
 
     bool canTravel, enableBounceTimer, enableTimer;
     int lives;
-    float bounceTimeToDestroy, lifeTime;
-    Vector3 travelDestiny;
+    float bounceTimeToDestroy, lifeTime, rotationSign;
+
+    Vector3 travelDestiny, startScale;
+    Quaternion startRotation;
+
     SpawneableObjectData data;
     ObjectSpawner objectSpawner;
 
@@ -47,17 +50,34 @@ public class ClickeableObject : CachedTransform, IClickeable
             enableBounceTimer = false;
             DestroyObject(false);
         }
+    }
 
+    void FixedUpdate()
+    {
         if (!canTravel) return;
 
-        if (Vector3.Distance(MyTransform.position, travelDestiny) < .1f)
+        if (Vector3.Distance(RBody.position, travelDestiny) < .1f)
         {
             canTravel = false;
             DestroyObject(false);
         }
 
         Vector3 travelDirection = Vector3.Normalize(travelDestiny - MyTransform.position);
-        MyTransform.Translate(Time.deltaTime * data.travelSpeed * travelDirection, Space.World);
+        RBody.MovePosition(RBody.position + (data.travelSpeed * Time.deltaTime * travelDirection));
+        RBody.MoveRotation(Quaternion.Euler(RBody.rotation.eulerAngles + new Vector3(0, rotationSign * 100 * Time.deltaTime, 0)));
+        //MyTransform.Translate(Time.deltaTime * data.travelSpeed * travelDirection, Space.World);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!canTravel) return;
+
+        if (data.objectBehaviour == ObjectBehaviour.Travel)
+        {
+            Vector3 normal = collision.GetContact(0).normal;
+            travelDestiny = RBody.position + normal * 50;
+            rotationSign = normal.x > 0 ? 1 : -1;
+        }
     }
 
     public void Init(SpawneableObjectData data, ObjectSpawner spawner)
@@ -69,12 +89,13 @@ public class ClickeableObject : CachedTransform, IClickeable
 
     public void StartBehaviour()
     {
+        startScale = MyTransform.localScale;
+        startRotation = MyTransform.rotation;
+
         switch (ObjBehaviour)
         {
             case ObjectBehaviour.Expand:
                 RBody.isKinematic = true;
-
-                Vector3 startScale = MyTransform.localScale;
                 MyTransform.localScale = Vector3.zero;
 
                 LeanTween.scale(gameObject, startScale, .5f).setEaseOutBounce();
@@ -88,8 +109,9 @@ public class ClickeableObject : CachedTransform, IClickeable
                 RBody.isKinematic = true;
 
                 travelDestiny = MyTransform.position + MyTransform.forward * 50;
-                float rotation = Random.Range(0, 1) < .5f ? -360 : 360;
-                LeanTween.rotateAround(gameObject, Vector3.up, rotation, .5f).setLoopCount(int.MaxValue);
+                rotationSign = Random.Range(0f, 1f) <= .5f ? -1 : 1;
+                //float rotation = Random.Range(0, 1) < .5f ? -360 : 360;
+                //LeanTween.rotateAround(gameObject, Vector3.up, rotation, .5f).setLoopCount(int.MaxValue);
 
                 //Debug.DrawLine(MyTransform.position, travelDestiny, Color.green, 5);
                 //Debug.DrawRay(MyTransform.position, travelDirection, Color.red, 5);
@@ -97,7 +119,7 @@ public class ClickeableObject : CachedTransform, IClickeable
                 break;
 
             case ObjectBehaviour.Jump:
-                MakeJump(10, false);
+                MakeJump(Random.Range(8f, 11f), false);
                 break;
         }
 
@@ -171,8 +193,13 @@ public class ClickeableObject : CachedTransform, IClickeable
         RBody.isKinematic = true;
         meshRenderer.enabled = true;
         enableBounceTimer = false;
+
         canTravel = false;
         enableTimer = false;
+
+        MyTransform.localScale = startScale;
+        MyTransform.rotation = startRotation;
+
         LeanTween.cancel(gameObject);
     }
 
@@ -191,5 +218,13 @@ public class ClickeableObject : CachedTransform, IClickeable
         ).setOnComplete(() => { OnDeath?.Invoke(this); });
 
         LeanTween.rotateY(gameObject, 360, .1f).setLoopCount(10);
+    }
+
+    public void FreezeObject()
+    {
+        RBody.isKinematic = true;
+        canTravel = false;
+        LeanTween.cancel(gameObject);
+        enableTimer = enableBounceTimer = enabled = false;
     }
 }

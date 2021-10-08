@@ -15,8 +15,9 @@ MonoBehaviour:
   objectType: 3
   objectBehaviour: 1
   destroyBehaviour: 0
-  travelSpeed: 5
+  travelSpeed: 8
   timeToFail: 5
   lives: 1
+  coinsToSpawnOnClick: 0
   points: -5
   failPoints: 0

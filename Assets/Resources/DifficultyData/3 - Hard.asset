@@ -18,17 +18,17 @@ MonoBehaviour:
     - objectType: 0
       chance: 0.6
     - objectType: 1
-      chance: 0.4
+      chance: 0.274
     - objectType: 2
-      chance: 0.2
+      chance: 0.071
     - objectType: 3
-      chance: 0.4
+      chance: 0.468
     - objectType: 4
-      chance: 0.4
+      chance: 0.375
     - objectType: 5
-      chance: 0.15
+      chance: 0.009
   maxRoundTime: 120
-  minTimeToSpawn: 0.2
-  maxTimeToSpawn: 1.5
-  minObjectSpawnQuantity: 15
-  maxObjectSpawnQuantity: 20
+  minTimeToSpawn: 0.55
+  maxTimeToSpawn: 4
+  minObjectSpawnQuantity: 13
+  maxObjectSpawnQuantity: 18

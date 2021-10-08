@@ -39,8 +39,9 @@ public class ObjectPool : CachedTransform
 
     public void SpawnObject(Vector3 startPos, Quaternion startRotation)
     {
-        poolObjects[index].MyTransform.position = startPos;
-        poolObjects[index].MyTransform.rotation = startRotation;
+        if (IsSpawnCompromised()) return;
+
+        poolObjects[index].MyTransform.SetPositionAndRotation(startPos, startRotation);
         poolObjects[index].StartBehaviour();
 
         index++;
@@ -50,9 +51,20 @@ public class ObjectPool : CachedTransform
     public void ReturnObject(ClickeableObject objectToReturn)
     {
         objectToReturn.MyTransform.localPosition = Vector3.zero;
-        objectToReturn.MyTransform.rotation = Quaternion.identity;
-        objectToReturn.MyTransform.localScale = Vector3.one;
         objectToReturn.ResetData();
         objectSpawner.DecreaseObjectNumber();
+    }
+
+    public bool IsSpawnCompromised()
+    {
+        Collider[] possibleObjects = new Collider[2];
+        int size = Physics.OverlapBoxNonAlloc(poolObjects[index].MyTransform.position, poolObjects[index].MyTransform.position, possibleObjects);
+        return size > 0;
+    }
+
+    public void StopAllObjects()
+    {
+        int size = poolObjects.Length;
+        for (int i = 0; i < size; i++) poolObjects[i].FreezeObject();
     }
 }

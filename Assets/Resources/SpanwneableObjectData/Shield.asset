@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Shield
   m_EditorClassIdentifier: 
   objectType: 4
-  objectBehaviour: 2
+  objectBehaviour: 1
   destroyBehaviour: 1
   travelSpeed: 0
   timeToFail: 5
   lives: 5
+  coinsToSpawnOnClick: 0
   points: 10
   failPoints: 5

@@ -85,7 +85,7 @@ public class ObjectSpawner : CachedTransform
                     offScreenSide = MainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, (MainCamera.fieldOfView / 2) - 10));
                     xPos = Random.Range(0f, 1f) < .5f ? offScreenSide.x : -offScreenSide.x;
 
-                    spawnPos = MyTransform.position + new Vector3(xPos, Random.Range(-offScreenSide.y, offScreenSide.y), 0);
+                    spawnPos = MyTransform.position + new Vector3(xPos, Random.Range(-offScreenSide.y, offScreenSide.y), Random.Range(-2f, 2f));
                     spawnRot = Quaternion.LookRotation(MyTransform.position - spawnPos, Vector3.up);
                     //Debug.DrawLine(spawnPos, MyTransform.position, Color.yellow, 5);
                     //Debug.DrawRay(spawnPos, Vector3.Normalize(spawnPos - MyTransform.position), Color.cyan, 5);
@@ -97,12 +97,12 @@ public class ObjectSpawner : CachedTransform
 
                     xPos = Random.Range(0f, 1f) < .5f ? offScreenSide.x : -offScreenSide.x;
 
-                    spawnPos = MyTransform.position + new Vector3(xPos, 0, 0);
+                    spawnPos = MyTransform.position + new Vector3(xPos, 0, Random.Range(-2f, 2f));
                     spawnRot = Quaternion.Euler(0, 180, 0);
                     break;
 
                 default:
-                    spawnPos = MyTransform.position + new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
+                    spawnPos = MyTransform.position + new Vector3(Random.Range(-4f, 4f), Random.Range(-4f, 4f), Random.Range(-2f, 2f));
                     spawnRot = Quaternion.Euler(0, 180, 0);
                     break;
             }
@@ -127,5 +127,13 @@ public class ObjectSpawner : CachedTransform
     {
         forceCoinSpawn = true;
         coinsToSpawn = quantity;
+    }
+
+    public void OnGameOver()
+    {
+        gameStarted = false;
+
+        int size = pools.Length;
+        for (int i = 0; i < size; i++) pools[i].StopAllObjects();
     }
 }

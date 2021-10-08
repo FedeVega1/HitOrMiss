@@ -18,5 +18,6 @@ MonoBehaviour:
   travelSpeed: 10
   timeToFail: 5
   lives: 1
+  coinsToSpawnOnClick: 0
   points: 1
   failPoints: 1

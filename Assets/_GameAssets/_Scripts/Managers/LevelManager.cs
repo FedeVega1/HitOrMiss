@@ -90,8 +90,15 @@ public class LevelManager : MonoBehaviour
 
     void GameOver(bool win)
     {
+        canCountTime = false;
+        _RoundTime = 0;
 
+        UIManager.INS.OnGameOver(win);
+        objectSpawner.OnGameOver();
+        inputManager.EnableInput = false;
     }
+
+    public void RestartLevel() => UnityEngine.SceneManagement.SceneManager.LoadScene("Level01");
 
     public void ScorePoints(int ammount) => PlayerScore += ammount;
     public void RemovePoints(int ammount) => PlayerScore -= ammount;
