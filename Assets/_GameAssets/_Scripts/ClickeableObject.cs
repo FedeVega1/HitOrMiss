@@ -16,6 +16,8 @@ public class ClickeableObject : CachedTransform, IClickeable
     [SerializeField] BoxCollider boxCollider;
     [SerializeField] Transform lblPointsRoot;
     [SerializeField] TMP_Text lblPoints;
+    [SerializeField] AudioSource clickASrc, killASrc;
+    [SerializeField] AudioClip[] clickClips, killClips;
 
     public ObjectBehaviour ObjBehaviour => data.objectBehaviour;
     public ObjectType ObjType => data.objectType;
@@ -221,6 +223,13 @@ public class ClickeableObject : CachedTransform, IClickeable
             clickPS.Play();
         }
 
+        if (clickASrc != null)
+        {
+            clickASrc.clip = clickClips[Random.Range(0, clickClips.Length)];
+            clickASrc.pitch = Random.Range(.8f, 1.2f);
+            clickASrc.Play();
+        }
+
         lives--;
         if (lives < 1) DestroyObject(true);
         if (data.objectType == ObjectType.TargetMark) objectSpawner.ForceCoinsToSpawn(data.coinsToSpawnOnClick);
@@ -234,6 +243,13 @@ public class ClickeableObject : CachedTransform, IClickeable
 
         if (byClick)
         {
+            if (killASrc != null)
+            {
+                killASrc.clip = killClips[Random.Range(0, killClips.Length)];
+                killASrc.pitch = Random.Range(.8f, 1.2f);
+                killASrc.Play();
+            }
+
             LeanTween.cancel(gameObject);
 
             switch (data.destroyBehaviour)
@@ -331,5 +347,11 @@ public class ClickeableObject : CachedTransform, IClickeable
         canTravel = false;
         LeanTween.cancel(gameObject);
         enableTimer = enableBounceTimer = enabled = false;
+    }
+
+    public void SetSFXVolume(float newValue)
+    {
+        if (killASrc != null) killASrc.volume = newValue;
+        if (clickASrc != null) clickASrc.volume = newValue;
     }
 }

@@ -16,6 +16,19 @@ public class CachedTransform : MonoBehaviour
     }
 }
 
+public class CachedRectTransform : MonoBehaviour
+{
+    RectTransform _MyTransform;
+    public RectTransform MyTransform
+    {
+        get
+        {
+            if (_MyTransform == null) _MyTransform = GetComponent<RectTransform>();
+            return _MyTransform;
+        }
+    }
+}
+
 public static class Utilities
 {
     public static bool MouseOverUI()

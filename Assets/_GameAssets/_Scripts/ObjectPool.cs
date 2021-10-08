@@ -67,4 +67,10 @@ public class ObjectPool : CachedTransform
         int size = poolObjects.Length;
         for (int i = 0; i < size; i++) poolObjects[i].FreezeObject();
     }
+
+    public void SetVolumeOfAllPoolObjects(float newValue)
+    {
+        int size = poolObjects.Length;
+        for (int i = 0; i < size; i++) poolObjects[i].SetSFXVolume(newValue);
+    }
 }

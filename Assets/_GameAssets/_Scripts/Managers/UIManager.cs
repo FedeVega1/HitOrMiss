@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] CanvasGroup gameOverCanvas, obscurerCanvas;
     [SerializeField] Toggle helperPointsToggle;
     [SerializeField] Image roundTimerFill;
+    [SerializeField] VolumePanel musicPanel, sfxPanel;
 
     void Awake()
     {
@@ -27,11 +28,32 @@ public class UIManager : MonoBehaviour
         UpdatePlayerScore(0, 100);
     }
 
+    void OnEnable()
+    {
+        musicPanel.OnMute += LevelManager.INS.ToggleMusic;
+        musicPanel.OnVolumeChange += OnMusicVolumeChange;
+
+        sfxPanel.OnMute += LevelManager.INS.ToggleSFX;
+        sfxPanel.OnVolumeChange += OnSFXVolumeChange;
+    }
+
+    void OnDisable()
+    {
+        musicPanel.OnMute -= LevelManager.INS.ToggleMusic;
+        musicPanel.OnVolumeChange -= OnMusicVolumeChange;
+
+        sfxPanel.OnMute -= LevelManager.INS.ToggleSFX;
+        sfxPanel.OnVolumeChange -= OnSFXVolumeChange;
+    }
+
     public void StartGame()
     {
         LeanTween.moveY(roundTimerFill.rectTransform, -18, .25f).setEaseOutBounce();
         LeanTween.moveY(scoreRect, -50, .25f).setEaseOutSine();
         LeanTween.moveY(btnExit, 150, .25f).setEaseOutSine();
+
+        musicPanel.Hide();
+        sfxPanel.Hide();
     }
 
     public void SetUpDifficultyButtons(ref DifficultyData[] data)
@@ -91,4 +113,13 @@ public class UIManager : MonoBehaviour
     public void FadeOut() => LeanTween.alphaCanvas(obscurerCanvas, 0, .5f).setEaseOutSine();
 
     public void ToggleHelperPoints() => LevelManager.INS.EnableHelperPoints = helperPointsToggle.isOn;
+
+    public void InitVolumePanels(float normalizedMusicPanel, float normalizedSFXPanel)
+    {
+        musicPanel.Init(normalizedMusicPanel, normalizedMusicPanel <= 0);
+        musicPanel.Init(normalizedSFXPanel, normalizedSFXPanel <= 0);
+    }
+
+    public void OnMusicVolumeChange(float normalizedMusic) => LevelManager.INS.MusicVolume = normalizedMusic;
+    public void OnSFXVolumeChange(float normalizedSFX) => LevelManager.INS.SFXVolume = normalizedSFX;
 }

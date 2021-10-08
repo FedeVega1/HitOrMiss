@@ -10,6 +10,9 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] ObjectSpawner objectSpawner;
     [SerializeField] InputManager inputManager;
+    [SerializeField] AudioSource gameOverASrc, mainMusicASrc;
+    [SerializeField] AudioClip[] gameOverClips;
+    [SerializeField] float maxMusicVolume = .5f, maxSFXVolume = .7f;
 
     float _RoundTime;
     public float CurrentRoundTime
@@ -67,6 +70,72 @@ public class LevelManager : MonoBehaviour
         }
     }
 
+    float _MusicVolume = -1;
+    public float MusicVolume
+    {
+        get
+        {
+            if (_MusicVolume == -1)
+            {
+                if (PlayerPrefs.HasKey("Music"))
+                {
+                    _MusicVolume = PlayerPrefs.GetFloat("Music");
+                }
+                else
+                {
+                    _MusicVolume = maxMusicVolume;
+                    PlayerPrefs.SetFloat("Music", _MusicVolume);
+                }
+
+                mainMusicASrc.volume = _MusicVolume;
+            }
+
+            return _MusicVolume;
+        }
+
+        set
+        {
+            _MusicVolume = Mathf.Clamp(maxMusicVolume * value, 0, maxMusicVolume);
+            mainMusicASrc.volume = _MusicVolume;
+            PlayerPrefs.SetFloat("Music", _MusicVolume);
+        }
+    }
+
+    float _SFXVolume = -1;
+    public float SFXVolume
+    {
+        get
+        {
+            if (_SFXVolume == -1)
+            {
+                if (PlayerPrefs.HasKey("SFX"))
+                {
+                    _SFXVolume = PlayerPrefs.GetFloat("SFX");
+                }
+                else
+                {
+                    _SFXVolume = maxSFXVolume;
+                    PlayerPrefs.SetFloat("SFX", _SFXVolume);
+                }
+
+                gameOverASrc.volume = _SFXVolume;
+                objectSpawner.SetVolumeOfAllObjects(_SFXVolume);
+            }
+
+            return _SFXVolume;
+        }
+
+        set
+        {
+            _SFXVolume = Mathf.Clamp(maxSFXVolume * value, 0, maxSFXVolume);
+
+            gameOverASrc.volume = _SFXVolume;
+            objectSpawner.SetVolumeOfAllObjects(_SFXVolume);
+
+            PlayerPrefs.SetFloat("SFX", _SFXVolume);
+        }
+    }
+
     public DifficultyLevel CurrentDifficultyLevel { get; private set; }
 
     bool canCountTime;
@@ -95,6 +164,8 @@ public class LevelManager : MonoBehaviour
         {
             Debug.LogError("Couldn't load DifficultyData");
         }
+
+        UIManager.INS.InitVolumePanels(MusicVolume / maxMusicVolume, SFXVolume / maxSFXVolume);
     }
 
     void Update()
@@ -114,6 +185,9 @@ public class LevelManager : MonoBehaviour
         canCountTime = true;
         CurrentRoundTime = maxTime = data.maxRoundTime;
         UIManager.INS.StartGame();
+
+        mainMusicASrc.Play();
+        LeanTween.value(0, MusicVolume, .25f).setOnUpdate((value) => { mainMusicASrc.volume = value; });
     }
 
     void GameOver(bool win)
@@ -121,9 +195,14 @@ public class LevelManager : MonoBehaviour
         canCountTime = false;
         _RoundTime = 0;
 
+        gameOverASrc.clip = gameOverClips[win ? 0 : 1];
+        gameOverASrc.Play();
+
         UIManager.INS.OnGameOver(win);
         objectSpawner.OnGameOver();
         inputManager.EnableInput = false;
+
+        LeanTween.value(MusicVolume, 0, .25f).setOnUpdate((value) => { mainMusicASrc.volume = value; }).setOnComplete(() => { mainMusicASrc.Stop(); });
     }
 
     public void ExitGame() => Application.Quit();
@@ -131,4 +210,12 @@ public class LevelManager : MonoBehaviour
 
     public void ScorePoints(int ammount) => PlayerScore += ammount;
     public void RemovePoints(int ammount) => PlayerScore -= ammount;
+
+    public void ToggleMusic(bool toggle) => mainMusicASrc.volume = toggle ? MusicVolume : 0;
+
+    public void ToggleSFX(bool toggle)
+    {
+        gameOverASrc.volume = toggle ? SFXVolume : 0;
+        objectSpawner.SetVolumeOfAllObjects(toggle ? SFXVolume : 0);
+    }
 }

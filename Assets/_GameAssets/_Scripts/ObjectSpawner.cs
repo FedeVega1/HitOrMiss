@@ -143,4 +143,10 @@ public class ObjectSpawner : CachedTransform
         int size = pools.Length;
         for (int i = 0; i < size; i++) pools[i].StopAllObjects();
     }
+
+    public void SetVolumeOfAllObjects(float newValue)
+    {
+        int size = pools.Length;
+        for (int i = 0; i < size; i++) pools[i].SetVolumeOfAllPoolObjects(newValue);
+    }
 }
